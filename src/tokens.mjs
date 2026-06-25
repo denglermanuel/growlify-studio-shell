@@ -28,7 +28,8 @@ export function tokenVars() {
     --brand:${t.brand}; --brandInk:${t.brandInk}; --accent:${t.accent}; --onDark:${t.onDark};
     --ok:${t.ok}; --warn:${t.warn}; --fail:${t.fail};
     --radius:10px; --radius-sm:8px;
-    --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;`;
+    --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --font-mono:'Spline Sans Mono',ui-monospace,'SF Mono',Menlo,monospace;`;
 }
 
 // Die fünf Module der Suite in fester Reihenfolge. Brain ist das Herz (erste Position).

@@ -85,4 +85,29 @@ Touch-Target ≥ 44px, sichtbarer Keyboard-Focus. Empty/Error als Handlungsauffo
 ## 9. Copy-Prinzipien
 Kernaussage zuerst, aktiv, aus Nutzersicht. Konsistentes Vokabular (Modul, Reiter, Erkenntnis,
 Gesundheit). Keine Em-Dashes als Einschub. Status-Texte konkret: „finance meldet seit 14h nicht"
-statt „Fehler".
+statt „Fehler". Aus `frontend-design`: Worte sind Design-Material. Fehler erklären was und wie zu
+beheben, Empty-States sind eine Handlungsaufforderung, ein Control sagt was es tut („Erkenntnis
+adeln", nicht „Absenden").
+
+## 10. Skill-Synthese (was aus welchem Skill kam, nachvollziehbar)
+- **ui-ux-pro-max** (Such-CLI, „business suite studios dashboard"): übernommen das Strukturmuster
+  **Data-Dense + Drill-Down** (KPI-Karten, Datentabellen, dichtes Grid), die Primitives **Row-Hover,
+  Hover-Tooltips, Filter** und die A11y-Gates (Kontrast 4.5:1, sichtbarer Focus, reduced-motion,
+  Breakpoints 375/768/1024/1440, keine Emoji als Icons). **Bewusst verworfen:** dessen Default-Dunkel-
+  Palette (#020617) und Fira-Code/Sans. Begründung: die warme Lane und Plus Jakarta Sans sind
+  Marken-Vorgabe (Brief gewinnt). Das ist akzeptierte, dokumentierte Schuld, kein Versehen.
+- **frontend-design** (Keystone): Anti-Templating-Bewusstsein. „Warmes Creme + Serif + Terracotta"
+  ist selbst ein AI-Default. Unsere warme Fläche bleibt (Marke), die Distinktion verdienen wir NICHT
+  über Dekor, sondern über drei subjekt-gegründete Entscheidungen:
+  1. **Signature = die Suite-Übersichtsseite („Cockpit") mit dem Brain als lebendiger Konstellation**
+     (Obsidian-Look). Das ist der eine mutige Ort, hier darf Design „krachen". Jeder Studio-Header
+     bleibt bewusst ruhig und diszipliniert. (Deckt sich mit Manuels Wunsch, das Brain zentral auf
+     einer Übersicht zu inszenieren, nicht im Switcher.)
+  2. **Struktur kodiert Wahrheit, nicht Dekor:** Status-Punkte = echte `system_health`. Der
+     Aufwärts-Pfeil = realer Rauf-Fluss. Keine schmückenden 01/02/03-Nummern.
+  3. **Utility-Face für Zahlen:** Plus Jakarta Sans für Text, plus **Spline Sans Mono** mit
+     `tabular-nums` für Geldbeträge, KPIs, Zähler. Gibt den datendichten Studios eine präzise,
+     instrumentenhafte Anmutung (das System als Messinstrument), grounded im Subjekt. Genau ein
+     zusätzlicher Face, keine Typo-Sammlung.
+- **minimalist-ui** (Default-Lane via web-design-haus): warm-monochrom, Weißraum, dezente Motion.
+  Bleibt das ruhige Fundament rund um die eine Signature.
