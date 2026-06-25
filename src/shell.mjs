@@ -10,17 +10,20 @@ const dotClass = (s) => (s === 'ok' ? 'dot-ok' : s === 'warn' ? 'dot-warn' : s =
 //   health : { <key>: 'ok'|'warn'|'fail'|'still' } aus system_health (fehlt = 'still')
 //   links  : { <key>: 'https://…' } absolute Modul-URLs (Cross-Domain). Fehlt = relativer href.
 //   homeHref : Ziel der Wortmarke (Suite-Übersicht). Default '/'.
-export function suiteTopbar({ active = '', health = {}, links = {}, homeHref = '/', modules = MODULES } = {}) {
+export function suiteTopbar({ active = '', health = {}, links = {}, homeHref = '/', statusUrl = '', modules = MODULES } = {}) {
   const pills = modules.map((m) => {
     const cur = m.key === active;
     const st = health[m.key] || 'still';
     const href = links[m.key] || m.href;
     return `<a class="pill" href="${esc(href)}"${cur ? ' aria-current="page"' : ''}>`
-      + `${esc(m.label)}<span class="dot ${dotClass(st)}" aria-hidden="true"></span>`
+      + `${esc(m.label)}<span class="dot ${dotClass(st)}" data-mod="${esc(m.key)}" aria-hidden="true"></span>`
       + `<span class="sr-only"> Status ${esc(st)}</span></a>`;
   }).join('');
   const ok = modules.filter((m) => (health[m.key] || 'still') === 'ok').length;
-  const dots = modules.map((m) => `<span class="dot ${dotClass(health[m.key] || 'still')}"></span>`).join('');
+  const dots = modules.map((m) => `<span class="dot ${dotClass(health[m.key] || 'still')}" data-mod="${esc(m.key)}"></span>`).join('');
+  const liveScript = statusUrl
+    ? `<script>(function(){fetch(${JSON.stringify(statusUrl)}).then(function(r){return r.json()}).then(function(d){if(!d||!d.modules)return;var m={ok:'dot-ok',warn:'dot-warn',fail:'dot-fail'};document.querySelectorAll('[data-mod]').forEach(function(e){e.className='dot '+(m[d.modules[e.getAttribute('data-mod')]]||'dot-still')})}).catch(function(){})})();</script>`
+    : '';
   return `<header class="suite-topbar">
   <a class="suite-brand" href="${esc(homeHref)}" style="text-decoration:none">
     <span class="mark">G</span><span>Growlify</span><span class="tag">Suite</span>
@@ -29,7 +32,7 @@ export function suiteTopbar({ active = '', health = {}, links = {}, homeHref = '
   <div class="suite-health" title="${ok} von ${modules.length} Modulen gesund">
     <span>Gesundheit</span><span style="display:inline-flex;gap:3px">${dots}</span>
   </div>
-</header>`;
+</header>${liveScript}`;
 }
 
 // Einheitliche System-Sektion: Feed (system_log) + Gesundheit (eigene Checks) + Learnings/Insights.

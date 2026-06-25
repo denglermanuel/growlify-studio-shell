@@ -2,13 +2,14 @@
 import { writeFileSync } from 'node:fs';
 import { baseCss, suiteTopbar, systemSection } from '../src/index.mjs';
 
-const health = { brain: 'warn', crm: 'ok', sales: 'ok', finance: 'ok', marketing: 'still' };
+const health = {};
+const statusUrl = 'http://sfb9da0vaien08of59th70v7.178.104.27.120.sslip.io/business/api/status';
 
 const page = `<!doctype html><html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suite-Shell Vorschau</title><style>${baseCss()}</style></head>
 <body>
-${suiteTopbar({ active: 'finance', health })}
+${suiteTopbar({ active: 'finance', health, statusUrl })}
 <div style="display:flex;align-items:center;gap:18px;padding:13px 18px 0;border-bottom:1px solid var(--border);background:var(--surface2)">
   <span style="font-weight:600;font-size:16px;padding-bottom:11px">Finance</span>
   <span class="muted" style="font-size:13px;padding-bottom:13px">Überblick</span>
