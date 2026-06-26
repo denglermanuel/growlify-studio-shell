@@ -46,6 +46,38 @@ export function suiteTopbar({ active = '', health = {}, links = {}, homeHref = '
 </header>${live}`;
 }
 
+const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+
+// Suite-Launcher: ein kleines Menü-Icon, das ein Popover mit den fünf Modulen + Live-Gesundheit
+// öffnet. Selbst-enthalten (Inline-Styles + winziges Script), dependency-frei. Drop-in: das ganze
+// Stück an den Anfang des bestehenden Studio-Headers setzen (neben das growlify-Logo).
+//   active   : key des aktuellen Moduls   statusUrl: /business/api/status für Live-Dots
+//   links    : { <key>: 'https://…' } überschreibt Default-URLs
+export function suiteLauncher({ active = '', links = {}, statusUrl = '', modules = MODULES } = {}) {
+  const rows = modules.map((m) => {
+    const cur = m.key === active;
+    const href = links[m.key] || m.href;
+    return `<a href="${esc(href)}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;${cur ? `background:${T.surface2};` : ''}">`
+      + `<span style="flex:1;color:${T.fg1};font-size:14px;${cur ? 'font-weight:600;' : ''}">${esc(m.label)}</span>`
+      + `${cur ? `<span style="font-size:11px;color:${T.fg3}">hier</span>` : ''}`
+      + `<span data-mod="${esc(m.key)}" style="width:8px;height:8px;border-radius:999px;background:${STILL};display:inline-block"></span></a>`;
+  }).join('');
+  const live = statusUrl
+    ? `var C={ok:${JSON.stringify(T.ok)},warn:${JSON.stringify(T.warn)},fail:${JSON.stringify(T.fail)}};fetch(${JSON.stringify(statusUrl)}).then(function(r){return r.json()}).then(function(d){if(!d||!d.modules)return;var ok=0,t=0;document.querySelectorAll("#growlify-suite [data-mod]").forEach(function(e){var s=d.modules[e.getAttribute("data-mod")];e.style.background=C[s]||${JSON.stringify(STILL)};t++;if(s==="ok")ok++;});var h=document.querySelector("#growlify-suite [data-suite-health]");if(h)h.textContent=ok+"/"+t+" gesund";}).catch(function(){});`
+    : '';
+  return `<div id="growlify-suite" style="position:relative;display:inline-flex;font-family:${FONT}">
+  <button type="button" aria-label="Module wechseln" onclick="var p=document.querySelector('#growlify-suite [data-suite-pop]');p.style.display=(p.style.display==='block'?'none':'block');event.stopPropagation()" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;border:1px solid ${T.border};background:${T.surface2};color:${T.fg1};cursor:pointer;flex:none">${GRID_SVG}</button>
+  <div data-suite-pop style="display:none;position:absolute;top:42px;left:0;width:280px;background:${T.surface};border:1px solid ${T.border};border-radius:12px;box-shadow:0 12px 32px rgba(24,34,27,0.13);overflow:hidden;z-index:1000">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid ${T.surface2}">
+      <span style="display:flex;align-items:center;gap:7px;font-weight:600;color:${T.fg1};font-size:13.5px"><span style="width:18px;height:18px;border-radius:5px;background:${T.brand};color:${T.brandInk};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">G</span>Growlify Suite</span>
+      <span data-suite-health style="font-size:11.5px;color:${T.brandInk};background:#E1F5EE;border:1px solid #9FE1CB;border-radius:999px;padding:1px 8px">—</span>
+    </div>
+    <div style="padding:6px">${rows}</div>
+  </div>
+  <script>(function(){document.addEventListener('click',function(e){var p=document.querySelector('#growlify-suite [data-suite-pop]');if(p&&!e.target.closest('#growlify-suite'))p.style.display='none';});${live}})();</script>
+</div>`;
+}
+
 // Einheitliche System-Sektion: Feed + Gesundheit + Learnings. Nutzt baseCss-Klassen.
 export function systemSection({ feed = [], health = { status: 'still', checks: [] }, learnings = [] } = {}) {
   const feedRows = feed.length

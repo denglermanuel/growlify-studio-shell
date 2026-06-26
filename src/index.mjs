@@ -49,5 +49,5 @@ tbody tr:hover{background:var(--surface2)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}`;
 }
 
-export { suiteTopbar, systemSection } from './shell.mjs';
+export { suiteTopbar, suiteLauncher, systemSection } from './shell.mjs';
 export { MODULES as modules } from './tokens.mjs';
