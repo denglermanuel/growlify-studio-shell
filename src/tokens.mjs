@@ -3,7 +3,7 @@
 // sondern ziehen baseCss() aus index.mjs (das diese Tokens als :root setzt).
 
 export const TOKENS = {
-  bg: '#F8F8F4',
+  bg: '#FAFAF9',
   surface: '#FFFFFF',
   surface2: '#F2F2EC',
   fg1: '#18221B',
@@ -13,7 +13,7 @@ export const TOKENS = {
   brand: '#13E489',
   brandInk: '#04342C',
   accent: '#23B2CF',
-  onDark: '#F8F8F4',
+  onDark: '#FAFAF9',
   ok: '#13E489',
   warn: '#EF9F27',
   fail: '#E24B4A',
