@@ -46,30 +46,40 @@ export function suiteTopbar({ active = '', health = {}, links = {}, homeHref = '
 </header>${live}`;
 }
 
-const GRID_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+// Inline-SVG-Icons, harte Strokes (unabhängig von Studio-CSS). svg(path, color, size).
+const svg = (p, c, s = 16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;display:block">${p}</svg>`;
+const GRID_SVG = (c) => svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', c, 18);
+const MOD_ICON = {
+  brain: '<path d="M9.5 17h5"/><path d="M10 20h4"/><path d="M12 3a5 5 0 0 1 3 9c-.5.4-1 1-1 2h-4c0-1-.5-1.6-1-2a5 5 0 0 1 3-9z"/>',
+  crm: '<circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>',
+  sales: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
+  finance: '<circle cx="12" cy="12" r="8"/><path d="M12 7v10"/><path d="M14.6 9.4a2.6 2 0 0 0-2.6-1.4 2.6 2 0 0 0 0 5 2.6 2 0 0 1 0 5 2.6 2 0 0 1-2.6-1.4"/>',
+  marketing: '<path d="M4 9.5v5a1 1 0 0 0 1 1h2l8 4V4.5L7 8.5H5a1 1 0 0 0-1 1z"/><path d="M17.5 9a3.5 3.5 0 0 1 0 6"/>',
+};
 
 // Suite-Launcher: ein kleines Menü-Icon, das ein Popover mit den fünf Modulen + Live-Gesundheit
-// öffnet. Selbst-enthalten (Inline-Styles + winziges Script), dependency-frei. Drop-in: das ganze
-// Stück an den Anfang des bestehenden Studio-Headers setzen (neben das growlify-Logo).
-//   active   : key des aktuellen Moduls   statusUrl: /business/api/status für Live-Dots
-//   links    : { <key>: 'https://…' } überschreibt Default-URLs
+// öffnet. Selbst-enthalten, dependency-frei, kugelsicher gegen globale Studio-Styles (alle Werte
+// inline, Icons mit hartem Stroke). Drop-in: das ganze Stück an den Anfang des bestehenden Headers.
+//   active : key des aktuellen Moduls   statusUrl: same-origin-Proxy für Live-Dots (kein Mixed-Content)
 export function suiteLauncher({ active = '', links = {}, statusUrl = '', modules = MODULES } = {}) {
   const rows = modules.map((m) => {
     const cur = m.key === active;
     const href = links[m.key] || m.href;
-    return `<a href="${esc(href)}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;${cur ? `background:${T.surface2};` : ''}">`
-      + `<span style="flex:1;color:${T.fg1};font-size:14px;${cur ? 'font-weight:600;' : ''}">${esc(m.label)}</span>`
+    const ic = svg(MOD_ICON[m.key] || '', cur ? T.brandInk : T.fg2, 17);
+    return `<a href="${esc(href)}" style="display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;text-decoration:none;${cur ? `background:${T.surface2};` : ''}">`
+      + `${ic}<span style="flex:1;color:${T.fg1};font-size:14px;${cur ? 'font-weight:600;' : ''}">${esc(m.label)}</span>`
       + `${cur ? `<span style="font-size:11px;color:${T.fg3}">hier</span>` : ''}`
-      + `<span data-mod="${esc(m.key)}" style="width:8px;height:8px;border-radius:999px;background:${STILL};display:inline-block"></span></a>`;
+      + `<span data-mod="${esc(m.key)}" style="width:8px;height:8px;border-radius:999px;background:${STILL};display:inline-block;flex:none"></span></a>`;
   }).join('');
   const live = statusUrl
     ? `var C={ok:${JSON.stringify(T.ok)},warn:${JSON.stringify(T.warn)},fail:${JSON.stringify(T.fail)}};fetch(${JSON.stringify(statusUrl)}).then(function(r){return r.json()}).then(function(d){if(!d||!d.modules)return;var ok=0,t=0;document.querySelectorAll("#growlify-suite [data-mod]").forEach(function(e){var s=d.modules[e.getAttribute("data-mod")];e.style.background=C[s]||${JSON.stringify(STILL)};t++;if(s==="ok")ok++;});var h=document.querySelector("#growlify-suite [data-suite-health]");if(h)h.textContent=ok+"/"+t+" gesund";}).catch(function(){});`
     : '';
-  return `<div id="growlify-suite" style="position:relative;display:inline-flex;font-family:${FONT}">
-  <button type="button" aria-label="Module wechseln" onclick="var p=document.querySelector('#growlify-suite [data-suite-pop]');p.style.display=(p.style.display==='block'?'none':'block');event.stopPropagation()" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;border:1px solid ${T.border};background:${T.surface2};color:${T.fg1};cursor:pointer;flex:none">${GRID_SVG}</button>
-  <div data-suite-pop style="display:none;position:absolute;top:42px;left:0;width:280px;background:${T.surface};border:1px solid ${T.border};border-radius:12px;box-shadow:0 12px 32px rgba(24,34,27,0.13);overflow:hidden;z-index:1000">
+  const btn = 'margin:0;padding:0;line-height:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;border:1px solid ' + T.border + ';background:' + T.surface2 + ';cursor:pointer;flex:none';
+  return `<div id="growlify-suite" style="position:relative;display:inline-flex;align-items:center;font-family:${FONT}">
+  <button type="button" aria-label="Module wechseln" onclick="var p=document.querySelector('#growlify-suite [data-suite-pop]');p.style.display=(p.style.display==='block'?'none':'block');event.stopPropagation()" style="${btn}">${GRID_SVG(T.fg1)}</button>
+  <div data-suite-pop style="display:none;position:absolute;top:44px;left:0;width:284px;background:${T.surface};border:1px solid ${T.border};border-radius:12px;box-shadow:0 12px 32px rgba(24,34,27,0.13);z-index:1000">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid ${T.surface2}">
-      <span style="display:flex;align-items:center;gap:7px;font-weight:600;color:${T.fg1};font-size:13.5px"><span style="width:18px;height:18px;border-radius:5px;background:${T.brand};color:${T.brandInk};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">G</span>Growlify Suite</span>
+      <span style="display:flex;align-items:center;gap:7px;font-weight:600;color:${T.fg1};font-size:13.5px"><span style="width:18px;height:18px;border-radius:5px;background:${T.brand};color:${T.brandInk};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;line-height:1">G</span>Growlify Suite</span>
       <span data-suite-health style="font-size:11.5px;color:${T.brandInk};background:#E1F5EE;border:1px solid #9FE1CB;border-radius:999px;padding:1px 8px">—</span>
     </div>
     <div style="padding:6px">${rows}</div>
