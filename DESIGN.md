@@ -125,8 +125,12 @@ Plus Jakarta Sans bleiben.
    schweben über **sehr weichen, geschichteten Schatten** statt Rahmen.
    `--shadow-sm: 0 1px 2px rgba(24,34,27,.04); --shadow: 0 1px 3px rgba(24,34,27,.05), 0 10px 30px rgba(24,34,27,.04)`.
    Rahmen nur noch als optionale Haarlinie `rgba(24,34,27,.06)`. Das ist der größte Modern-Sprung.
-2. **Surface-Staffelung.** Seitengrund minimal kühler/ruhiger `--bg:#F6F6F3`, Karten reines
-   `--surface:#FFFFFF`, vertiefte Flächen `--surface-2:#F1F1EC`. Drei Ebenen, klar lesbar.
+2. **Surface-Staffelung — warmes Weiß statt Creme.** Entscheidung 2026-06-26: das beige
+   Creme als Vollfläche wird abgelöst. Seitengrund **`--bg:#FAFAF9`** (warmes Weiß, ein Hauch
+   Wärme, nicht steril), Karten reines `--surface:#FFFFFF`, vertiefte Flächen `--surface-2:#F4F4F1`.
+   Trennung der Karten über die sanfte Tiefe (Schatten), nicht über Farbkontrast. Die Wärme lebt
+   jetzt in Akzent (Grün/Cyan), Text (`#18221B`) und warmen Grautönen, nicht im Hintergrund.
+   Ein Token-Flip Richtung kühler (reines Growly-Weiß `#FBFBFC`) oder wärmer jederzeit möglich.
 3. **Großzügiger Takt.** Karten-Innenabstand 20→**24px**, Sektion-Rhythmus 32→**44/56px**,
    striktes 8pt-Grid. Mehr Luft = ruhiger, teurer.
 4. **Schärfere Typo-Hierarchie.** Headline-Skala mit `clamp()`, tracking -0.025em; Sektion-Titel
