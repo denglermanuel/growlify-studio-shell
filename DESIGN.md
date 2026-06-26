@@ -111,3 +111,43 @@ adeln", nicht „Absenden").
      zusätzlicher Face, keine Typo-Sammlung.
 - **minimalist-ui** (Default-Lane via web-design-haus): warm-monochrom, Weißraum, dezente Motion.
   Bleibt das ruhige Fundament rund um die eine Signature.
+
+## 11. Suite v2 — Next Level (Apple-Logik, ohne Bruch)
+Ziel: moderner, eleganter, aufgeräumter. Wir werfen nichts um, wir **heben das Bestehende**.
+Leitprinzip aus Apples Designsprache: **Klarheit, Zurückhaltung, Tiefe.** Inhalt führt, Chrome
+tritt zurück, Material gibt sanfte Tiefe. Quelle: ui-ux-pro-max (Bento + sanfte Tiefe + ruhige
+Motion), frontend-design (Hierarchie/Anti-Templated), minimalist-ui (warme Ruhe). Palette und
+Plus Jakarta Sans bleiben.
+
+**Die sieben Hebel (jeder klein, zusammen ein Sprung):**
+
+1. **Tiefe statt Linien.** Heute: weiße Karten mit harter 1px-Linie auf Creme. v2: Karten
+   schweben über **sehr weichen, geschichteten Schatten** statt Rahmen.
+   `--shadow-sm: 0 1px 2px rgba(24,34,27,.04); --shadow: 0 1px 3px rgba(24,34,27,.05), 0 10px 30px rgba(24,34,27,.04)`.
+   Rahmen nur noch als optionale Haarlinie `rgba(24,34,27,.06)`. Das ist der größte Modern-Sprung.
+2. **Surface-Staffelung.** Seitengrund minimal kühler/ruhiger `--bg:#F6F6F3`, Karten reines
+   `--surface:#FFFFFF`, vertiefte Flächen `--surface-2:#F1F1EC`. Drei Ebenen, klar lesbar.
+3. **Großzügiger Takt.** Karten-Innenabstand 20→**24px**, Sektion-Rhythmus 32→**44/56px**,
+   striktes 8pt-Grid. Mehr Luft = ruhiger, teurer.
+4. **Schärfere Typo-Hierarchie.** Headline-Skala mit `clamp()`, tracking -0.025em; Sektion-Titel
+   18→20px/600; Body 15→**16px**, line-height **1.65**; Zahlen/KPIs in **Spline Sans Mono**,
+   `tabular-nums`, größer und ruhiger. Genau zwei Gewichte (400/600).
+5. **Weichere Rundungen.** Karten 10→**14px**, große Panels **18px**, Controls **10px**.
+6. **Bento-Dashboards.** Studio-Überblicke als **modulares Bento-Grid** (verschieden große Karten:
+   eine große KPI-Kachel, mehrere kleine), statt gleichförmiger Reihen. Apple-typisch, scannbar.
+7. **Ruhige Motion (Motion.dev/CSS).** Karten beim Laden **gestaffelt** ein (opacity + translateY 8px,
+   500ms cubic-bezier(0.16,1,0.3,1), stagger index×60ms). Hover: Karte hebt 2px + Schatten wächst,
+   150ms. Nur transform/opacity. `prefers-reduced-motion` schaltet alles ab. Ein Akzent pro Ansicht.
+
+**Bewusst NICHT:** kein Font-Wechsel (Satoshi/General Sans verworfen, Jakarta bleibt Marke), keine
+fremde Palette (Teal/Orange verworfen), kein Glass/Neon, keine schweren Schatten. Apple heißt hier
+**weniger, aber präziser**.
+
+**Komponenten-Refresh (im Shell-Paket zentral):** Karte (`--shadow` + 14px + 24px Padding),
+Button (Primär = ruhiger Grünverlauf, Sekundär = weich gefüllt, beide mit Hover-Lift), Pille/Tab,
+Badge, Tabelle (luftiger, Zeilen-Hover, mono-Zahlen rechts), KPI-Kachel (große mono-Zahl + Label +
+Mikro-Trend). Alle States: default/hover/focus-visible/active/disabled/empty/error.
+
+**Rollout-Weg:** Diese Tokens + Komponenten kommen ins `baseCss()` des Shell-Pakets. Ein
+Versions-Bump, jedes Studio zieht es. Server-Render-Studios sofort, statische beim nächsten Build.
+So wird der Sprung an EINER Stelle gemacht und überall sichtbar, ohne fünf Repos einzeln zu stylen.
