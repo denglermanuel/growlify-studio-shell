@@ -51,3 +51,4 @@ tbody tr:hover{background:var(--surface2)}
 
 export { suiteTopbar, suiteLauncher, systemSection } from './shell.mjs';
 export { MODULES as modules } from './tokens.mjs';
+export { ICONS, icon, fold, foldSec } from './components.mjs';
