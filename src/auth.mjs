@@ -1,0 +1,140 @@
+// auth.mjs — Suite-Auth (Stufe 1: zentraler Login).
+//
+// EIN kombiniertes Express-Middleware-Modul, das zwei Modi kennt:
+//   - AUTH_SECRET gesetzt  → Suite-Session: signiertes Cookie auf .growlify.de, eine Login-Maske,
+//     nahtloser Modulwechsel ohne erneuten Prompt.
+//   - AUTH_SECRET NICHT gesetzt → exakt das bisherige Verhalten: Basic-Auth via password (ADMIN_PASSWORD),
+//     bzw. offen, wenn auch kein password gesetzt ist.
+// Dadurch ist der Code gefahrlos vorab deploybar (schläft, bis AUTH_SECRET gesetzt wird).
+//
+// Session-Token = base64url(JSON{uid,tenant,role,exp}) + '.' + HMAC-SHA256(secret). Stateless, kein Store.
+// Trägt ab Tag 1 {uid,tenant,role} → Stufe 2 (Marcus/Rollen) und Stufe 3 (Mandanten) ohne Auth-Umbau.
+
+import crypto from 'node:crypto';
+
+const COOKIE = 'gf_session';
+const b64u = (buf) => Buffer.from(buf).toString('base64url');
+const safeEqual = (a, b) => {
+  const ab = Buffer.from(String(a)), bb = Buffer.from(String(b));
+  return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
+};
+
+export function signSession(payload, secret) {
+  const body = b64u(JSON.stringify(payload));
+  const mac = crypto.createHmac('sha256', secret).update(body).digest('base64url');
+  return `${body}.${mac}`;
+}
+
+export function verifySession(token, secret) {
+  if (!token || !secret || token.indexOf('.') < 0) return null;
+  const i = token.lastIndexOf('.');
+  const body = token.slice(0, i), mac = token.slice(i + 1);
+  const expected = crypto.createHmac('sha256', secret).update(body).digest('base64url');
+  if (mac.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) return null;
+  try {
+    const p = JSON.parse(Buffer.from(body, 'base64url').toString());
+    if (p.exp && Date.now() > p.exp) return null;
+    return p;
+  } catch { return null; }
+}
+
+function readCookie(req, name = COOKIE) {
+  const m = (req.headers.cookie || '').match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function cookieHeader(token, { domain, maxAge = 60 * 60 * 24 * 30, clear = false } = {}) {
+  let c = `${COOKIE}=${clear ? '' : token}; Path=/; HttpOnly; SameSite=Lax`;
+  c += clear ? '; Max-Age=0' : `; Max-Age=${maxAge}`;
+  if (domain) c += `; Domain=${domain}`;
+  c += '; Secure';
+  return c;
+}
+// Body eines Form-Posts selbst parsen (unabhängig davon, ob die App urlencoded gemountet hat).
+function readBody(req) {
+  return new Promise((resolve) => {
+    if (req.body && typeof req.body === 'object') return resolve(req.body);
+    let s = '';
+    req.on('data', (d) => { s += d; if (s.length > 1e6) req.destroy(); });
+    req.on('end', () => {
+      const out = {};
+      for (const part of s.split('&')) { const [k, v] = part.split('='); if (k) out[decodeURIComponent(k)] = decodeURIComponent((v || '').replace(/\+/g, ' ')); }
+      resolve(out);
+    });
+    req.on('error', () => resolve({}));
+  });
+}
+
+export function loginPage({ title = 'Growlify Suite', next = '', error = false, action = '/login' } = {}) {
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anmelden · ${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box} body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF9;color:#18221B;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.card{background:#fff;border:1px solid rgba(24,34,27,.07);border-radius:20px;box-shadow:0 1px 3px rgba(24,34,27,.05),0 18px 44px rgba(24,34,27,.06);padding:34px 32px;width:min(380px,92vw)}
+.wm{font-size:26px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(135deg,#13E489,#23B2CF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:13px;color:#6C756D;margin:2px 0 22px}
+label{display:block;font-size:12.5px;font-weight:600;color:#3C463E;margin:0 0 6px}
+input{width:100%;font:inherit;font-size:15px;padding:11px 13px;border:1px solid rgba(24,34,27,.12);border-radius:12px;background:#FAFAF9}
+input:focus{outline:none;border-color:#23B2CF;background:#fff}
+button{width:100%;margin-top:16px;background:linear-gradient(135deg,#13E489,#23B2CF);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.err{font-size:12.5px;color:#B4231F;margin-top:10px;min-height:1em}
+</style></head><body>
+<form class="card" method="post" action="${action}">
+  <div class="wm">growlify</div><div class="sub">Suite-Anmeldung</div>
+  <input type="hidden" name="next" value="${String(next).replace(/"/g, '&quot;')}">
+  <label for="pw">Passwort</label>
+  <input id="pw" name="password" type="password" autocomplete="current-password" autofocus>
+  <button type="submit">Anmelden</button>
+  <div class="err">${error ? 'Passwort falsch.' : ''}</div>
+</form></body></html>`;
+}
+
+// Hängt Login-Routen + Gate-Middleware an die App. Aufruf FRÜH (vor den eigentlichen Routen).
+// opts: { authSecret, cookieDomain, password, realm, title, open=[], openPrefix=[], bypass, loginPath='/login' }
+export function mountSuiteAuth(app, opts = {}) {
+  const {
+    authSecret, cookieDomain, password, realm = 'growlify', title = 'Growlify Suite',
+    open = [], openPrefix = [], bypass, loginPath = '/login',
+  } = opts;
+  const logoutPath = loginPath + '/logout';
+  const openSet = new Set([...open, loginPath, logoutPath]);
+  const isOpen = (p) => openSet.has(p) || openPrefix.some((pre) => p.startsWith(pre));
+
+  app.get(loginPath, (req, res) => {
+    if (authSecret && verifySession(readCookie(req), authSecret)) return res.redirect(302, req.query.next || '/');
+    res.type('html').send(loginPage({ title, next: req.query.next || '', error: req.query.e === '1', action: loginPath }));
+  });
+  app.post(loginPath, async (req, res) => {
+    const body = await readBody(req);
+    const next = body.next || req.query.next || '/';
+    if (authSecret && password && body.password && safeEqual(body.password, password)) {
+      const token = signSession({ uid: 'admin', tenant: 'mavisio', role: 'owner', exp: Date.now() + 1000 * 60 * 60 * 24 * 30 }, authSecret);
+      res.set('Set-Cookie', cookieHeader(token, { domain: cookieDomain }));
+      return res.redirect(302, next);
+    }
+    res.redirect(302, `${loginPath}?e=1${next ? '&next=' + encodeURIComponent(next) : ''}`);
+  });
+  const doLogout = (req, res) => { res.set('Set-Cookie', cookieHeader('', { domain: cookieDomain, clear: true })); res.redirect(302, loginPath); };
+  app.get(logoutPath, doLogout);
+  app.post(logoutPath, doLogout);
+
+  app.use((req, res, next) => {
+    const p = req.path;
+    if (p === loginPath || p === logoutPath || isOpen(p)) return next();
+    if (bypass && bypass(req)) return next();
+    if (authSecret) { // Suite-Session-Modus
+      const sess = verifySession(readCookie(req), authSecret);
+      if (sess) { req.suiteUser = sess; return next(); }
+      if (req.method === 'GET') return res.redirect(302, loginPath + '?next=' + encodeURIComponent(req.originalUrl));
+      return res.status(401).end('Anmeldung erforderlich');
+    }
+    if (password) { // Fallback: bisheriges Basic-Auth (exakt wie zuvor)
+      const [, b64] = (req.headers.authorization || '').split(' ');
+      const decoded = b64 ? Buffer.from(b64, 'base64').toString() : '';
+      const pass = decoded.slice(decoded.indexOf(':') + 1);
+      if (pass && safeEqual(pass, password)) return next();
+      return res.set('WWW-Authenticate', `Basic realm="${realm}"`).status(401).end('Auth erforderlich');
+    }
+    return next(); // weder Secret noch Passwort → offen (heutiges Verhalten von content)
+  });
+}
