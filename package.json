@@ -1,6 +1,6 @@
 {
   "name": "@growlify/studio-shell",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Geteilte Suite-Shell für die Growlify-Studios: Tokens, Topbar mit Modul-Switcher, System-Sektion. Framework-frei, server-rendered (HTML-Strings).",
   "type": "module",
   "main": "src/index.mjs",
@@ -8,10 +8,16 @@
     ".": "./src/index.mjs",
     "./tokens": "./src/tokens.mjs"
   },
-  "files": ["src", "DESIGN.md"],
+  "files": [
+    "src",
+    "DESIGN.md"
+  ],
   "scripts": {
     "preview": "node tools/preview.mjs"
   },
   "license": "UNLICENSED",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }

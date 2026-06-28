@@ -64,7 +64,23 @@ function readBody(req) {
   });
 }
 
-export function loginPage({ title = 'Growlify Suite', next = '', error = false, action = '/login' } = {}) {
+// Passwort-Hashing (scrypt, eingebaut, kein Dependency). Format: scrypt$<salt-hex>$<hash-hex>.
+export function hashPassword(pw) {
+  const salt = crypto.randomBytes(16);
+  const hash = crypto.scryptSync(String(pw), salt, 32);
+  return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
+}
+export function verifyPassword(pw, stored) {
+  if (!stored || !String(stored).startsWith('scrypt$')) return false;
+  const [, saltHex, hashHex] = String(stored).split('$');
+  try {
+    const hash = crypto.scryptSync(String(pw), Buffer.from(saltHex, 'hex'), 32);
+    const expected = Buffer.from(hashHex, 'hex');
+    return hash.length === expected.length && crypto.timingSafeEqual(hash, expected);
+  } catch { return false; }
+}
+
+export function loginPage({ title = 'Growlify Suite', next = '', error = false, action = '/login', withEmail = false } = {}) {
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anmelden · ${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -82,10 +98,12 @@ button{width:100%;margin-top:16px;background:linear-gradient(135deg,#13E489,#23B
 <form class="card" method="post" action="${action}">
   <div class="wm">growlify</div><div class="sub">Suite-Anmeldung</div>
   <input type="hidden" name="next" value="${String(next).replace(/"/g, '&quot;')}">
+  ${withEmail ? `<label for="em">E-Mail</label>
+  <input id="em" name="email" type="email" autocomplete="username" autofocus style="margin-bottom:14px">` : ''}
   <label for="pw">Passwort</label>
-  <input id="pw" name="password" type="password" autocomplete="current-password" autofocus>
+  <input id="pw" name="password" type="password" autocomplete="current-password"${withEmail ? '' : ' autofocus'}>
   <button type="submit">Anmelden</button>
-  <div class="err">${error ? 'Passwort falsch.' : ''}</div>
+  <div class="err">${error ? 'Anmeldung fehlgeschlagen.' : ''}</div>
 </form></body></html>`;
 }
 
@@ -95,20 +113,30 @@ export function mountSuiteAuth(app, opts = {}) {
   const {
     authSecret, cookieDomain, password, realm = 'growlify', title = 'Growlify Suite',
     open = [], openPrefix = [], bypass, loginPath = '/login',
+    validate, loginUrl,
   } = opts;
+  // validate(email, password) → Session-Payload {uid,tenant,role,name} | null  (echte Nutzerverwaltung, im Brain)
+  // loginUrl: externe Login-URL (z.B. das Brain), wohin nicht-autoritative Apps unangemeldet umleiten.
   const logoutPath = loginPath + '/logout';
   const openSet = new Set([...open, loginPath, logoutPath]);
   const isOpen = (p) => openSet.has(p) || openPrefix.some((pre) => p.startsWith(pre));
 
   app.get(loginPath, (req, res) => {
     if (authSecret && verifySession(readCookie(req), authSecret)) return res.redirect(302, req.query.next || '/');
-    res.type('html').send(loginPage({ title, next: req.query.next || '', error: req.query.e === '1', action: loginPath }));
+    if (loginUrl) return res.redirect(302, loginUrl + (req.query.next ? '?next=' + encodeURIComponent(req.query.next) : ''));
+    res.type('html').send(loginPage({ title, next: req.query.next || '', error: req.query.e === '1', action: loginPath, withEmail: !!validate }));
   });
   app.post(loginPath, async (req, res) => {
     const body = await readBody(req);
     const next = body.next || req.query.next || '/';
-    if (authSecret && password && body.password && safeEqual(body.password, password)) {
-      const token = signSession({ uid: 'admin', tenant: 'mavisio', role: 'owner', exp: Date.now() + 1000 * 60 * 60 * 24 * 30 }, authSecret);
+    let payload = null;
+    if (validate) {
+      try { payload = await validate(body.email, body.password); } catch { payload = null; }
+    } else if (password && body.password && safeEqual(body.password, password)) {
+      payload = { uid: 'admin', tenant: 'mavisio', role: 'owner' };
+    }
+    if (authSecret && payload) {
+      const token = signSession({ ...payload, exp: Date.now() + 1000 * 60 * 60 * 24 * 30 }, authSecret);
       res.set('Set-Cookie', cookieHeader(token, { domain: cookieDomain }));
       return res.redirect(302, next);
     }
@@ -125,7 +153,8 @@ export function mountSuiteAuth(app, opts = {}) {
     if (authSecret) { // Suite-Session-Modus
       const sess = verifySession(readCookie(req), authSecret);
       if (sess) { req.suiteUser = sess; return next(); }
-      if (req.method === 'GET') return res.redirect(302, loginPath + '?next=' + encodeURIComponent(req.originalUrl));
+      const target = loginUrl || loginPath; // externe Login-URL (Brain) oder lokale Maske
+      if (req.method === 'GET') return res.redirect(302, target + '?next=' + encodeURIComponent(loginUrl ? (req.protocol + '://' + req.get('host') + req.originalUrl) : req.originalUrl));
       return res.status(401).end('Anmeldung erforderlich');
     }
     if (password) { // Fallback: bisheriges Basic-Auth (exakt wie zuvor)
