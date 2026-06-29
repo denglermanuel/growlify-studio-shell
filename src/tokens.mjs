@@ -33,12 +33,12 @@ export function tokenVars() {
 }
 
 // Die fünf Module der Suite in fester Reihenfolge. Brain ist das Herz (erste Position).
-// Default-Links auf die echten Studio-URLs (Stand 2026-06-26). Pro Studio via
-// suiteTopbar({ links }) überschreibbar, falls eine sslip-URL sich ändert.
+// Default-Links auf die echten Studio-URLs (Stand 2026-06-29: alle auf *.growlify.de). Pro
+// Studio via suiteTopbar({ links }) überschreibbar.
 export const MODULES = [
-  { key: 'brain',     label: 'Brain',     href: 'http://sfb9da0vaien08of59th70v7.178.104.27.120.sslip.io/business', heart: true },
+  { key: 'brain',     label: 'Brain',     href: 'https://brain.growlify.de/business', heart: true },
   { key: 'crm',       label: 'CRM',       href: 'https://crm.growlify.de/crm' },
   { key: 'sales',     label: 'Sales',     href: 'https://sales.growlify.de/sales' },
-  { key: 'finance',   label: 'Finance',   href: 'http://r8leuypcokdl0i4trzttdley.178.104.27.120.sslip.io/finance/studio/' },
-  { key: 'marketing', label: 'Marketing', href: 'http://llinuw3wwim696zelbsezt24.178.104.27.120.sslip.io/content/studio/' },
+  { key: 'finance',   label: 'Finance',   href: 'https://finance.growlify.de/finance/studio/' },
+  { key: 'marketing', label: 'Marketing', href: 'https://marketing.growlify.de/content/studio/' },
 ];
