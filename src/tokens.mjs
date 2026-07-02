@@ -32,13 +32,14 @@ export function tokenVars() {
     --font-mono:'Spline Sans Mono',ui-monospace,'SF Mono',Menlo,monospace;`;
 }
 
-// Die fünf Module der Suite in fester Reihenfolge. Brain ist das Herz (erste Position).
+// Die sechs Module der Suite in fester Reihenfolge. Brain ist das Herz (erste Position).
 // Default-Links auf die echten Studio-URLs (Stand 2026-06-29: alle auf *.growlify.de). Pro
 // Studio via suiteTopbar({ links }) überschreibbar.
 export const MODULES = [
-  { key: 'brain',     label: 'Brain',     href: 'https://brain.growlify.de/business', heart: true },
-  { key: 'crm',       label: 'CRM',       href: 'https://crm.growlify.de/crm' },
-  { key: 'sales',     label: 'Sales',     href: 'https://sales.growlify.de/sales' },
-  { key: 'finance',   label: 'Finance',   href: 'https://finance.growlify.de/finance/studio/' },
-  { key: 'marketing', label: 'Marketing', href: 'https://marketing.growlify.de/content/studio/' },
+  { key: 'brain',       label: 'Brain',       href: 'https://brain.growlify.de/business', heart: true },
+  { key: 'crm',         label: 'CRM',         href: 'https://crm.growlify.de/crm' },
+  { key: 'sales',       label: 'Sales',       href: 'https://sales.growlify.de/sales' },
+  { key: 'finance',     label: 'Finance',     href: 'https://finance.growlify.de/finance/studio/' },
+  { key: 'marketing',   label: 'Marketing',   href: 'https://marketing.growlify.de/content/studio/' },
+  { key: 'transkripte', label: 'Transkripte', href: 'https://transkripte.growlify.de/transkripte' },
 ];

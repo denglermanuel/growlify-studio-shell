@@ -55,6 +55,7 @@ const MOD_ICON = {
   sales: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
   finance: '<circle cx="12" cy="12" r="8"/><path d="M12 7v10"/><path d="M14.6 9.4a2.6 2 0 0 0-2.6-1.4 2.6 2 0 0 0 0 5 2.6 2 0 0 1 0 5 2.6 2 0 0 1-2.6-1.4"/>',
   marketing: '<path d="M4 9.5v5a1 1 0 0 0 1 1h2l8 4V4.5L7 8.5H5a1 1 0 0 0-1 1z"/><path d="M17.5 9a3.5 3.5 0 0 1 0 6"/>',
+  transkripte: '<path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 13h6"/><path d="M9 17h6"/>',
 };
 
 // Suite-Launcher: ein kleines Menü-Icon, das ein Popover mit den fünf Modulen + Live-Gesundheit
