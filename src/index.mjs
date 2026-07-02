@@ -49,7 +49,9 @@ tbody tr:hover{background:var(--surface2)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}`;
 }
 
-export { suiteTopbar, suiteLauncher, systemSection } from './shell.mjs';
+export { suiteTopbar, suiteLauncher } from './shell.mjs';
+export { systemSection, systemCss, healthRows, feedRows, learningRows, fmtDe, ART_LABEL } from './system.mjs';
+export { ensureSyslog, logEvent, readFeed } from './syslog.mjs';
 export { MODULES as modules } from './tokens.mjs';
 export { ICONS, icon, fold, foldSec } from './components.mjs';
 export { mountSuiteAuth, signSession, verifySession, loginPage, hashPassword, verifyPassword } from './auth.mjs';

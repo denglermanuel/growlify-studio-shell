@@ -4,7 +4,6 @@
 import { MODULES, TOKENS } from './tokens.mjs';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const dotClass = (s) => (s === 'ok' ? 'dot-ok' : s === 'warn' ? 'dot-warn' : s === 'fail' ? 'dot-fail' : 'dot-still');
 
 const T = TOKENS;
 const FONT = "'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif";
@@ -89,22 +88,4 @@ export function suiteLauncher({ active = '', links = {}, statusUrl = '', modules
 </div>`;
 }
 
-// Einheitliche System-Sektion: Feed + Gesundheit + Learnings. Nutzt baseCss-Klassen.
-export function systemSection({ feed = [], health = { status: 'still', checks: [] }, learnings = [] } = {}) {
-  const feedRows = feed.length
-    ? feed.map((f) => `<div class="sys-row"><span style="color:var(--fg1)">${esc(f.message)}</span><span>${esc(f.meta || '')}</span></div>`).join('')
-    : `<div class="sys-row">Noch keine Ereignisse. Sobald das Studio läuft, erscheinen sie hier.</div>`;
-  const hb = health.status === 'ok' ? 'ok' : health.status === 'warn' ? 'warn' : health.status === 'fail' ? 'fail' : 'still';
-  const healthBadge = `<span class="pill" style="margin-left:auto;cursor:default"><span class="dot ${dotClass(hb)}"></span>${esc(health.status)} · ${health.checks.length} Checks</span>`;
-  const checkRows = health.checks.length
-    ? health.checks.map((c) => `<div class="sys-row"><span>${esc(c.name)}</span><span class="num" style="color:${c.ok ? 'var(--brandInk)' : 'var(--fail)'}">${esc(c.value)}</span></div>`).join('')
-    : `<div class="sys-row">Health-Reporter noch nicht aktiv.</div>`;
-  const learnRows = learnings.length
-    ? learnings.map((l) => `<div class="sys-row" style="display:block">${l.tag ? `<span style="font-size:11px;color:var(--brandInk);background:#E1F5EE;border-radius:4px;padding:0 6px;margin-right:6px">${esc(l.tag)}</span>` : ''}<span style="color:var(--fg1)">${esc(l.text)}</span></div>`).join('')
-    : `<div class="sys-row">Noch keine Erkenntnisse erfasst.</div>`;
-  return `<section class="sys-grid">
-  <div class="sys-card"><div class="sys-head">Feed</div>${feedRows}</div>
-  <div class="sys-card"><div class="sys-head">Gesundheit${healthBadge}</div>${checkRows}</div>
-  <div class="sys-card"><div class="sys-head">Learnings</div>${learnRows}</div>
-</section>`;
-}
+// Die System-Sektion lebt seit 0.12.0 in system.mjs (systemSection v2, Vorlage: Sales Studio).
