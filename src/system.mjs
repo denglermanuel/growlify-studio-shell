@@ -50,6 +50,7 @@ export function systemCss() {
 .gsys-card h3 .ic{width:17px;height:17px;color:${T.fg2}}
 .gsys-hint{color:${T.fg2};margin:0 0 10px;font-size:12.5px}
 .gsys-empty{color:${T.fg2};font-size:13px;margin:0}
+.gsys-tab-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.gsys-tab{border-collapse:collapse;width:100%;font-size:13px}
 table.gsys-tab th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:${T.fg3};padding:6px 10px;border-bottom:1px solid ${T.border};background:none}
 table.gsys-tab td{padding:9px 10px;border-bottom:1px solid ${T.surface2};vertical-align:top;border-top:0}
@@ -114,7 +115,7 @@ export function systemSection({
   const h = hydrate || {};
 
   const healthBody = health.length || h.healthUrl
-    ? `<table class="gsys-tab"><thead><tr><th>Dienst</th><th>Ziel</th><th>Status</th><th>Geprüft</th></tr></thead><tbody data-gsys="health">${healthRows(health, fmt)}</tbody></table>`
+    ? `<div class="gsys-tab-wrap"><table class="gsys-tab"><thead><tr><th>Dienst</th><th>Ziel</th><th>Status</th><th>Geprüft</th></tr></thead><tbody data-gsys="health">${healthRows(health, fmt)}</tbody></table></div>`
     : `<p class="gsys-empty">Health-Checks noch nicht angebunden.</p>`;
   const healthHtml = `<div class="gsys-card"><h3>${icon('check')}Systemgesundheit · Anbindungen</h3>${healthBody}</div>`;
 
@@ -128,7 +129,7 @@ export function systemSection({
     lrnHtml = `<div class="gsys-card" style="margin-bottom:20px"><h3>${icon('bulb')}Learnings</h3><p class="gsys-hint" style="margin:0">${esc(learnings.note || '')}${learnings.href ? ` <a href="${esc(learnings.href)}">${esc(learnings.hrefLabel || 'Zu den Learnings →')}</a>` : ''}</p></div>`;
   } else if (learnings || h.learningsUrl) {
     const items = (learnings && learnings.items) || [];
-    const body = `<table class="gsys-tab"><thead><tr><th>Datum</th><th>Kategorie</th><th>Learning</th></tr></thead><tbody data-gsys="learnings">${learningRows(items, fmt)}</tbody></table>`;
+    const body = `<div class="gsys-tab-wrap"><table class="gsys-tab"><thead><tr><th>Datum</th><th>Kategorie</th><th>Learning</th></tr></thead><tbody data-gsys="learnings">${learningRows(items, fmt)}</tbody></table></div>`;
     lrnHtml = foldWrap(`Learnings · System und Inhalt${items.length ? ' · ' + items.length : ''}`, items.length || h.learningsUrl ? body : '<p class="gsys-empty">Noch keine Learnings.</p>', 'bulb');
   }
 
