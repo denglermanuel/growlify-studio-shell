@@ -130,3 +130,31 @@ export function suiteChrome({
 
   return `${chromeCss()}${topbar}<div class="gsc-shell">${sidebar}<div class="gsc-backdrop" onclick="document.querySelector('.gsc-side').classList.remove('open');this.classList.remove('open')"></div><main class="gsc-main">${content}</main></div>${live}`;
 }
+
+
+// Kunden-Chrome: dieselbe Anatomie wie suiteChrome (Topbar + Seitenleiste + Drawer, identische
+// gsc-Optik), aber OHNE die internen Modul-Pills/Status-Dots — Kunden sehen nie die Suite-Module.
+// Für kundengerichtete Apps (Portal). topRight = optionaler HTML-String rechts in der Leiste
+// (z.B. Abmelden-Link).
+export function kundenChrome({
+  studio = 'Growlify', subtitle = '', studioHref = '/', nav = [], footerNav = [],
+  homeHref = '/', topRight = '', content = '',
+} = {}) {
+  const navItem = (n) => {
+    const inner = `${n.icon ? ic(n.icon) : ''}<span>${esc(n.label)}</span>`;
+    const cls = `gsc-item${n.active ? ' on' : ''}`;
+    return `<a class="${cls}" href="${esc(n.href || '#')}"${n.active ? ' aria-current="page"' : ''}>${inner}</a>`;
+  };
+  const topbar = `<div class="gsc-top"><div class="gsc-top-in">
+    <button type="button" class="gsc-burger" aria-label="Menü" onclick="document.querySelector('.gsc-side').classList.toggle('open');document.querySelector('.gsc-backdrop').classList.toggle('open')">${ic('grid', 17)}</button>
+    <a class="gsc-brand" href="${esc(homeHref)}"><span class="gsc-wm">growlify</span></a>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12.5px">${topRight}</div>
+  </div></div>`;
+  const studioHead = `<span class="gsc-studio-ic">${ic('heart', 16)}</span><div><div class="gsc-studio-name">${esc(studio)}</div>${subtitle ? `<div class="gsc-studio-sub">${esc(subtitle)}</div>` : ''}</div>`;
+  const sidebar = `<aside class="gsc-side">
+    <a class="gsc-studio" href="${esc(studioHref)}" style="text-decoration:none;color:inherit">${studioHead}</a>
+    <nav class="gsc-nav" aria-label="${esc(studio)}">${nav.map(navItem).join('')}</nav>
+    ${footerNav.length ? `<div class="gsc-side-foot">${footerNav.map(navItem).join('')}</div>` : ''}
+  </aside>`;
+  return `${chromeCss()}${topbar}<div class="gsc-shell">${sidebar}<div class="gsc-backdrop" onclick="document.querySelector('.gsc-side').classList.remove('open');this.classList.remove('open')"></div><main class="gsc-main">${content}</main></div>`;
+}

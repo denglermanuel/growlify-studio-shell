@@ -50,7 +50,7 @@ tbody tr:hover{background:var(--surface2)}
 }
 
 export { suiteTopbar, suiteLauncher } from './shell.mjs';
-export { suiteChrome, chromeCss } from './chrome.mjs';
+export { suiteChrome, kundenChrome, chromeCss } from './chrome.mjs';
 export { systemSection, systemCss, healthRows, feedRows, learningRows, fmtDe, ART_LABEL } from './system.mjs';
 export { ensureSyslog, logEvent, readFeed } from './syslog.mjs';
 export { MODULES as modules } from './tokens.mjs';
