@@ -8,6 +8,7 @@ const escTxt = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;',
 // Kuratierte Tabler-Outline-SVGs (stroke=currentColor). Union aller in der Suite genutzten Icons.
 export const ICONS = {
   grid: '<path d="M4 4h7v7H4z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/><path d="M13 13h7v7h-7z"/>',
+  orb: '<circle cx="12" cy="12" r="5"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M5.9 5.9l1.4 1.4"/><path d="M16.7 16.7l1.4 1.4"/><path d="M16.7 7.3l1.4-1.4"/><path d="M5.9 18.1l1.4-1.4"/>',
   target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
   settings: '<path d="M10.3 4.3a1.7 1.7 0 0 1 3.4 0a1.7 1.7 0 0 0 2.6 1.1a1.7 1.7 0 0 1 2.3 2.3a1.7 1.7 0 0 0 1.1 2.6a1.7 1.7 0 0 1 0 3.4a1.7 1.7 0 0 0-1.1 2.6a1.7 1.7 0 0 1-2.3 2.3a1.7 1.7 0 0 0-2.6 1.1a1.7 1.7 0 0 1-3.4 0a1.7 1.7 0 0 0-2.6-1.1a1.7 1.7 0 0 1-2.3-2.3a1.7 1.7 0 0 0-1.1-2.6a1.7 1.7 0 0 1 0-3.4a1.7 1.7 0 0 0 1.1-2.6a1.7 1.7 0 0 1 2.3-2.3a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/>',
   sliders: '<path d="M4 8h10"/><path d="M18 8h2"/><circle cx="16" cy="8" r="2"/><path d="M4 16h2"/><path d="M10 16h10"/><circle cx="8" cy="16" r="2"/>',
