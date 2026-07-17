@@ -28,6 +28,7 @@ const MOD_ICON = {
   finance: '<circle cx="12" cy="12" r="8"/><path d="M12 7v10"/><path d="M14.6 9.4a2.6 2 0 0 0-2.6-1.4 2.6 2 0 0 0 0 5 2.6 2 0 0 1 0 5 2.6 2 0 0 1-2.6-1.4"/>',
   marketing: '<path d="M4 9.5v5a1 1 0 0 0 1 1h2l8 4V4.5L7 8.5H5a1 1 0 0 0-1 1z"/><path d="M17.5 9a3.5 3.5 0 0 1 0 6"/>',
   transkripte: '<path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 13h6"/><path d="M9 17h6"/>',
+  eingang: '<path d="M4 5h16v14H4z"/><path d="M4 13h5a3 3 0 0 0 6 0h5"/><path d="M8 5l-4 8"/><path d="M16 5l4 8"/>',
 };
 const modIc = (key, size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none">${MOD_ICON[key] || ''}</svg>`;
 
@@ -90,6 +91,7 @@ export function chromeCss() {
 export function suiteChrome({
   active = '', studio = '', subtitle = '', studioHref = '', nav = [], footerNav = [],
   statusUrl = '', homeHref = '', links = {}, modules = MODULES, content = '',
+  jarvis = true, jarvisUrl = 'https://brain.growlify.de/business/jarvis',
 } = {}) {
   const home = homeHref || (modules.find((m) => m.key === 'brain') || {}).href || '/';
 
@@ -128,7 +130,59 @@ export function suiteChrome({
     ? `<script>(function(){var C={ok:${JSON.stringify(T.ok)},warn:${JSON.stringify(T.warn)},fail:${JSON.stringify(T.fail)}};fetch(${JSON.stringify(statusUrl)}).then(function(r){return r.json()}).then(function(d){if(!d||!d.modules)return;document.querySelectorAll('.gsc-dot[data-mod]').forEach(function(e){var s=d.modules[e.getAttribute('data-mod')];e.style.background=C[s]||${JSON.stringify(STILL)}})}).catch(function(){})})();</script>`
     : '';
 
-  return `${chromeCss()}${topbar}<div class="gsc-shell">${sidebar}<div class="gsc-backdrop" onclick="document.querySelector('.gsc-side').classList.remove('open');this.classList.remove('open')"></div><main class="gsc-main">${content}</main></div>${live}`;
+  return `${chromeCss()}${topbar}<div class="gsc-shell">${sidebar}<div class="gsc-backdrop" onclick="document.querySelector('.gsc-side').classList.remove('open');this.classList.remove('open')"></div><main class="gsc-main">${content}</main></div>${live}${jarvis ? jarvisOrb(jarvisUrl) : ''}`;
+}
+
+// Jarvis-Orb (v0.16): schwebender „Datenball" rechts unten in jedem Studio. Klick öffnet einen
+// Drawer mit dem eingebetteten Jarvis (Brain). Selbst-enthalten: eigenes CSS/JS, kein Framework.
+// Das iframe lädt erst beim ersten Öffnen (data-src), damit der Orb keine Last erzeugt.
+export function jarvisOrb(url = 'https://brain.growlify.de/business/jarvis') {
+  const dots = [
+    // [Ring-Radius, Winkel°, Punktgröße, Farbe, Pulsverzögerung s] — bewusst unregelmäßig, „Datenfluss".
+    [26, 10, 2.4, T.brand, 0], [26, 95, 1.7, T.accent, 0.7], [26, 150, 2.1, T.brand, 1.4], [26, 215, 1.5, '#8FF3C8', 0.3], [26, 300, 2.2, T.accent, 1.9],
+    [18, 40, 1.9, T.accent, 1.1], [18, 130, 2.5, T.brand, 0.5], [18, 250, 1.6, '#8FF3C8', 1.6], [18, 330, 2.0, T.brand, 0.9],
+    [10, 70, 1.8, '#B7F7DD', 0.2], [10, 190, 2.2, T.brand, 1.2], [10, 310, 1.5, T.accent, 0.6],
+  ].map(([r, a, s, f, d]) => {
+    const x = 32 + r * Math.cos((a * Math.PI) / 180);
+    const y = 32 + r * Math.sin((a * Math.PI) / 180);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s}" fill="${f}" class="gsc-jvs-dot" style="animation-delay:${d}s"/>`;
+  }).join('');
+  return `<style>
+.gsc-jvs{position:fixed;right:20px;bottom:20px;z-index:1200;width:56px;height:56px;border:none;border-radius:50%;cursor:pointer;padding:0;background:radial-gradient(circle at 34% 30%,#0B5A45 0%,${T.brandInk} 55%,#021F1A 100%);box-shadow:0 6px 24px rgba(4,52,44,.35),0 0 0 0 rgba(19,228,137,.35);animation:gsc-jvs-halo 3.2s ease-in-out infinite;transition:transform .18s ease}
+.gsc-jvs:hover{transform:scale(1.07)}
+.gsc-jvs svg{display:block;width:56px;height:56px}
+.gsc-jvs .gsc-jvs-ring{transform-origin:32px 32px;animation:gsc-jvs-spin 26s linear infinite}
+.gsc-jvs .gsc-jvs-ring2{transform-origin:32px 32px;animation:gsc-jvs-spin 17s linear infinite reverse}
+.gsc-jvs .gsc-jvs-dot{animation:gsc-jvs-pulse 2.6s ease-in-out infinite}
+.gsc-jvs .gsc-jvs-core{transform-origin:32px 32px;animation:gsc-jvs-core 2.6s ease-in-out infinite}
+@keyframes gsc-jvs-halo{0%,100%{box-shadow:0 6px 24px rgba(4,52,44,.35),0 0 0 0 rgba(19,228,137,.30)}50%{box-shadow:0 6px 24px rgba(4,52,44,.35),0 0 0 11px rgba(19,228,137,0)}}
+@keyframes gsc-jvs-spin{to{transform:rotate(360deg)}}
+@keyframes gsc-jvs-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes gsc-jvs-core{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.18);opacity:1}}
+@media (prefers-reduced-motion:reduce){.gsc-jvs,.gsc-jvs *{animation:none !important}}
+.gsc-jvs-drawer{position:fixed;top:0;right:0;bottom:0;z-index:1210;width:min(440px,100vw);background:${T.surface};border-left:1px solid ${T.border};box-shadow:-18px 0 40px rgba(24,34,27,.14);transform:translateX(105%);transition:transform .24s ease;display:flex;flex-direction:column}
+.gsc-jvs-drawer.open{transform:none}
+.gsc-jvs-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid ${T.border};font-family:${FONT};color:${T.fg1};font-weight:700}
+.gsc-jvs-head .dot{width:8px;height:8px;border-radius:50%;background:${GRAD};box-shadow:0 0 8px ${T.brand}}
+.gsc-jvs-head a{margin-left:auto;font-size:12px;font-weight:600;color:${T.fg2};text-decoration:none}
+.gsc-jvs-head button{border:none;background:none;cursor:pointer;color:${T.fg2};font-size:16px;line-height:1;padding:4px 6px}
+.gsc-jvs-frame{flex:1;border:none;width:100%}
+</style>
+<button type="button" class="gsc-jvs" aria-label="Jarvis öffnen" onclick="(function(d){d.classList.toggle('open');var f=d.querySelector('iframe');if(d.classList.contains('open')&&f&&!f.src)f.src=f.getAttribute('data-src')})(document.querySelector('.gsc-jvs-drawer'))">
+  <svg viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="4.6" fill="${T.brand}" class="gsc-jvs-core"/>
+    <circle cx="32" cy="32" r="10" fill="none" stroke="rgba(19,228,137,.25)" stroke-width=".7"/>
+    <circle cx="32" cy="32" r="18" fill="none" stroke="rgba(35,178,207,.22)" stroke-width=".7" stroke-dasharray="2 5"/>
+    <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(19,228,137,.18)" stroke-width=".7" stroke-dasharray="1.5 6"/>
+    <g class="gsc-jvs-ring">${dots}</g>
+    <g class="gsc-jvs-ring2"><circle cx="50" cy="32" r="1.6" fill="${T.accent}" class="gsc-jvs-dot" style="animation-delay:.4s"/><circle cx="14" cy="32" r="1.9" fill="${T.brand}" class="gsc-jvs-dot" style="animation-delay:1.5s"/><circle cx="32" cy="12" r="1.4" fill="#B7F7DD" class="gsc-jvs-dot" style="animation-delay:.9s"/></g>
+  </svg>
+</button>
+<aside class="gsc-jvs-drawer" aria-label="Jarvis">
+  <div class="gsc-jvs-head"><span class="dot"></span>Jarvis<a href="${esc(url)}" target="_blank" rel="noopener">im Brain öffnen ↗</a><button type="button" aria-label="Schließen" onclick="this.closest('.gsc-jvs-drawer').classList.remove('open')">✕</button></div>
+  <iframe class="gsc-jvs-frame" data-src="${esc(url)}${url.includes('?') ? '&' : '?'}embed=1" title="Jarvis"></iframe>
+</aside>
+<script>document.addEventListener('keydown',function(e){if(e.key==='Escape'){var d=document.querySelector('.gsc-jvs-drawer');if(d)d.classList.remove('open')}})</script>`;
 }
 
 
